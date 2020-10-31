@@ -2,15 +2,18 @@
 
 source emsdk-2.0.8/emsdk_env.sh
 
+rm -rf build
 mkdir -p build
 
+## Compile pcre
+
 emcc                                         \
-  -o build/pcre.o                            \
   -O3                                        \
   -I vendor/pcre/10.23/src                   \
   -I vendor/pcre/include                     \
   -D HAVE_CONFIG_H                           \
   -D PCRE2_CODE_UNIT_WIDTH=16                \
+  -c                                         \
   vendor/pcre/pcre2_chartables.c             \
   vendor/pcre/10.23/src/pcre2_auto_possess.c \
   vendor/pcre/10.23/src/pcre2_compile.c      \
@@ -36,21 +39,33 @@ emcc                                         \
   vendor/pcre/10.23/src/pcre2_valid_utf.c    \
   vendor/pcre/10.23/src/pcre2_xclass.c
 
+mv *.o build/
+
+emar                         \
+  rcs build/pcre.a           \
+  build/*.o
+
+rm build/*.o
+
+### Compile superstring
+
 em++                                    \
   --bind                                \
   -o browser.js                         \
+  -std=c++20                            \
   -O3                                   \
   -I src/bindings/em                    \
   -I src/core                           \
   -I vendor/libcxx                      \
   -I vendor/pcre/include                \
+  -D HAVE_CONFIG_H                      \
   -D PCRE2_CODE_UNIT_WIDTH=16           \
   -xc++                                 \
+  -s TOTAL_MEMORY=134217728             \
   --pre-js src/bindings/em/prologue.js  \
   --post-js src/bindings/em/epilogue.js \
   src/core/*.cc                         \
   src/bindings/em/*.cc                  \
-  build/pcre.o                          \
-  -s TOTAL_MEMORY=134217728             \
+  build/pcre.a                          \
   --memory-init-file 0                  \
   "$@"
