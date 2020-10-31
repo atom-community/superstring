@@ -4,6 +4,6 @@ build
 .clang_complete
 
 /browser.js
-emsdk-1.39.16
+emsdk-2.0.8
 package-lock.json
 browser.wasm
