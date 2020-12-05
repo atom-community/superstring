@@ -63,56 +63,49 @@
                     ]
                 }],
             ],
+        },
+        {
+            "target_name": "tests",
+            "type": "executable",
+            "cflags_cc!": ["-fno-exceptions"],
+            "defines": [
+                "CATCH_CONFIG_CPP11_NO_IS_ENUM"
+            ],
+            "sources": [
+                "test/native/test-helpers.cc",
+                "test/native/tests.cc",
+                "test/native/encoding-conversion-test.cc",
+                "test/native/patch-test.cc",
+                "test/native/text-buffer-test.cc",
+                "test/native/text-test.cc",
+                "test/native/text-diff-test.cc",
+                "benchmark/native/marker-index-benchmark.cc"
+            ],
+            "include_dirs": [
+                "vendor",
+                "src/core",
+            ],
+            "dependencies": [
+                "superstring_core"
+            ],
+            "conditions": [
+                ['OS=="mac"', {
+                    'cflags': [
+                        "-mmacosx-version-min=<(MACOSX_DEPLOYMENT_TARGET)"
+                    ],
+                    "xcode_settings": {
+                        "GCC_ENABLE_CPP_EXCEPTIONS": "YES",
+                        'MACOSX_DEPLOYMENT_TARGET': '<(MACOSX_DEPLOYMENT_TARGET)',
+                    }
+                }]
+            ]
         }
     ],
 
     "variables": {
-        "tests": 0,
         "STANDARD": 17,
         "MACOSX_DEPLOYMENT_TARGET": "10.8"
     },
-
-    "conditions": [
-        # If --tests is passed to node-gyp configure, we'll build a standalone
-        # executable that runs tests on the patch.
-        ['tests != 0', {
-            "targets": [{
-                "target_name": "tests",
-                "type": "executable",
-                "cflags_cc!": ["-fno-exceptions"],
-                "defines": [
-                    "CATCH_CONFIG_CPP11_NO_IS_ENUM"
-                ],
-                "sources": [
-                    "test/native/test-helpers.cc",
-                    "test/native/tests.cc",
-                    "test/native/encoding-conversion-test.cc",
-                    "test/native/patch-test.cc",
-                    "test/native/text-buffer-test.cc",
-                    "test/native/text-test.cc",
-                    "test/native/text-diff-test.cc",
-                ],
-                "include_dirs": [
-                    "vendor",
-                    "src/core",
-                ],
-                "dependencies": [
-                    "superstring_core"
-                ],
-                "conditions": [
-                    ['OS=="mac"', {
-                        'cflags': [
-                            "-mmacosx-version-min=<(MACOSX_DEPLOYMENT_TARGET)"
-                        ],
-                        "xcode_settings": {
-                            "GCC_ENABLE_CPP_EXCEPTIONS": "YES",
-                            'MACOSX_DEPLOYMENT_TARGET': '<(MACOSX_DEPLOYMENT_TARGET)',
-                        }
-                    }]
-                ]
-            }]
-        }]
-    ],
     "target_defaults": {
         "cflags_cc": [ "-std=c++<(STANDARD)" ],
         "conditions": [
