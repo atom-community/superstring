@@ -23,7 +23,7 @@ private:
   static void get_column(v8::Local<v8::String> property,
                         const Nan::PropertyCallbackInfo<v8::Value> &info);
 
-  Point point;
+  Point point{};
 };
 
 #endif // SUPERSTRING_POINT_WRAPPER_H

@@ -106,7 +106,7 @@ class ChangeWrapper : public Nan::ObjectWrap {
     info.GetReturnValue().Set(Nan::New<String>(result.str()).ToLocalChecked());
   }
 
-  Patch::Change change;
+  Patch::Change change{};
 };
 
 void PatchWrapper::init(Local<Object> exports) {

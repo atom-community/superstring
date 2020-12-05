@@ -74,7 +74,7 @@ static size_t CHUNK_SIZE = 10 * 1024;
 
 class RegexWrapper : public Nan::ObjectWrap {
  public:
-  Regex regex;
+  Regex regex{};
   static Nan::Persistent<Function> constructor;
   static void construct(const Nan::FunctionCallbackInfo<v8::Value> &info) {}
 
@@ -183,7 +183,7 @@ public:
     info.GetReturnValue().Set(Nan::New<Integer>(match.score));
   }
 
-  TextBuffer::SubsequenceMatch match;
+  TextBuffer::SubsequenceMatch match{};
 };
 
 Nan::Persistent<Function> SubsequenceMatchWrapper::constructor;
@@ -542,14 +542,14 @@ void TextBufferWrapper::find_all(const Nan::FunctionCallbackInfo<Value> &info) {
 
 void TextBufferWrapper::find_words_with_subsequence_in_range(const Nan::FunctionCallbackInfo<v8::Value> &info) {
   class FindWordsWithSubsequenceInRangeWorker : public Nan::AsyncWorker, public CancellableWorker {
-    Nan::Persistent<Object> buffer;
-    const TextBuffer::Snapshot *snapshot;
+    Nan::Persistent<Object> buffer{};
+    const TextBuffer::Snapshot *snapshot{};
     const u16string query;
     const u16string extra_word_characters;
-    const size_t max_count;
-    const Range range;
-    vector<TextBuffer::SubsequenceMatch> result;
-    uv_rwlock_t snapshot_lock;
+    const size_t max_count{};
+    const Range range{};
+    vector<TextBuffer::SubsequenceMatch> result{};
+    uv_rwlock_t snapshot_lock{};
 
   public:
     FindWordsWithSubsequenceInRangeWorker(Local<Object> buffer,
@@ -727,15 +727,15 @@ static u16string load_file(
 }
 
 class Loader {
-  Nan::Callback *progress_callback;
-  Nan::AsyncResource *async_resource;
-  TextBuffer *buffer;
-  TextBuffer::Snapshot *snapshot;
+  Nan::Callback *progress_callback{};
+  Nan::AsyncResource *async_resource{};
+  TextBuffer *buffer{};
+  TextBuffer::Snapshot *snapshot{};
   string file_name;
   string encoding_name;
-  optional<Text> loaded_text;
-  optional<Error> error;
-  Patch patch;
+  optional<Text> loaded_text{};
+  optional<Error> error{};
+  Patch patch{};
   bool force;
   bool compute_patch;
 
@@ -983,10 +983,10 @@ void TextBufferWrapper::load(const Nan::FunctionCallbackInfo<Value> &info) {
 }
 
 class BaseTextComparisonWorker : public Nan::AsyncWorker {
-  TextBuffer::Snapshot *snapshot;
+  TextBuffer::Snapshot *snapshot{};
   string file_name;
   string encoding_name;
-  optional<Error> error;
+  optional<Error> error{};
   bool result;
 
  public:
@@ -1044,10 +1044,10 @@ void TextBufferWrapper::base_text_matches_file(const Nan::FunctionCallbackInfo<V
 }
 
 class SaveWorker : public Nan::AsyncWorker {
-  TextBuffer::Snapshot *snapshot;
+  TextBuffer::Snapshot *snapshot{};
   string file_name;
   string encoding_name;
-  optional<Error> error;
+  optional<Error> error{};
 
  public:
   explicit SaveWorker(Nan::Callback *completion_callback, TextBuffer::Snapshot *snapshot,

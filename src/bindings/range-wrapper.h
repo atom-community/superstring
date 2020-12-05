@@ -20,7 +20,7 @@ private:
   static void get_start(v8::Local<v8::String>, const Nan::PropertyCallbackInfo<v8::Value> &);
   static void get_end(v8::Local<v8::String>, const Nan::PropertyCallbackInfo<v8::Value> &);
 
-  Range range;
+  Range range{};
 };
 
 #endif // SUPERSTRING_RANGE_WRAPPER_H

@@ -14,7 +14,7 @@ class TextSlice;
 
 struct ClipResult {
   Point position;
-  uint32_t offset;
+  uint32_t offset{};
 };
 
 class Text {

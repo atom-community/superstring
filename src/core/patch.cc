@@ -30,12 +30,12 @@ struct Patch::Node {
   Point old_distance_from_left_ancestor;
   Point new_distance_from_left_ancestor;
 
-  unique_ptr<Text> old_text;
-  unique_ptr<Text> new_text;
+  unique_ptr<Text> old_text{};
+  unique_ptr<Text> new_text{};
   uint32_t old_text_size_;
 
-  uint32_t old_subtree_text_size;
-  uint32_t new_subtree_text_size;
+  uint32_t old_subtree_text_size{};
+  uint32_t new_subtree_text_size{};
 
   explicit Node(
     Node *left,

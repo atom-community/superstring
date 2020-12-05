@@ -16,9 +16,9 @@ private:
   static void write(const Nan::FunctionCallbackInfo<v8::Value> &info);
   static void end(const Nan::FunctionCallbackInfo<v8::Value> &info);
 
-  EncodingConversion conversion;
-  std::vector<char> leftover_bytes;
-  std::u16string content;
+  EncodingConversion conversion{};
+  std::vector<char> leftover_bytes{};
+  std::u16string content{};
 };
 
 #endif // SUPERSTRING_TEXT_WRITER_H

@@ -12,8 +12,8 @@
 
 class TextBuffer {
   struct Layer;
-  Layer *base_layer;
-  Layer *top_layer;
+  Layer *base_layer{};
+  Layer *top_layer{};
   void squash_layers(const std::vector<Layer *> &);
   void consolidate_layers();
 

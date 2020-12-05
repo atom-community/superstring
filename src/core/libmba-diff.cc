@@ -64,8 +64,8 @@ using std::vector;
 
 struct _ctx {
   vector<int> buf;
-  vector<diff_edit> *ses;
-  int dmax;
+  vector<diff_edit> *ses{};
+  int dmax{};
 };
 
 struct middle_snake {
@@ -189,7 +189,7 @@ static int _ses(
   const char16_t *b, uint32_t boff, uint32_t m,
   struct _ctx *ctx
 ) {
-  struct middle_snake ms;
+  struct middle_snake ms{};
   int d;
 
   if (n == 0) {

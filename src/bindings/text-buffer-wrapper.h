@@ -13,8 +13,8 @@ public:
 class TextBufferWrapper : public Nan::ObjectWrap {
 public:
   static void init(v8::Local<v8::Object> exports);
-  TextBuffer text_buffer;
-  std::unordered_set<CancellableWorker *> outstanding_workers;
+  TextBuffer text_buffer{};
+  std::unordered_set<CancellableWorker *> outstanding_workers{};
 
 private:
   static void construct(const Nan::FunctionCallbackInfo<v8::Value> &info);

@@ -28,11 +28,11 @@ public:
     Point old_end;
     Point new_start;
     Point new_end;
-    Text *old_text;
-    Text *new_text;
-    uint32_t preceding_old_text_size;
-    uint32_t preceding_new_text_size;
-    uint32_t old_text_size;
+    Text *old_text{};
+    Text *new_text{};
+    uint32_t preceding_old_text_size{};
+    uint32_t preceding_new_text_size{};
+    uint32_t old_text_size{};
   };
 
   // Construction and destruction

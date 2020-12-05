@@ -26,8 +26,8 @@ public:
   };
 
   struct BoundaryQueryResult {
-    std::vector<MarkerId> containing_start;
-    std::vector<Boundary> boundaries;
+    std::vector<MarkerId> containing_start{};
+    std::vector<Boundary> boundaries{};
   };
 
   explicit MarkerIndex(unsigned seed = 0u);
