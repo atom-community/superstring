@@ -7,6 +7,7 @@
 #include <sstream>
 #include <unordered_map>
 #include <vector>
+#include <memory>
 
 using std::equal;
 using std::move;
@@ -14,6 +15,10 @@ using std::pair;
 using std::string;
 using std::u16string;
 using std::vector;
+using std::unique_ptr;
+using std::make_unique;
+using std::shared_ptr;
+using std::make_shared;
 using MatchOptions = Regex::MatchOptions;
 using MatchResult = Regex::MatchResult;
 using SubsequenceMatch = TextBuffer::SubsequenceMatch;
@@ -23,7 +28,7 @@ uint32_t TextBuffer::MAX_CHUNK_SIZE_TO_COPY = 1024;
 static Text EMPTY_TEXT;
 
 struct TextBuffer::Layer {
-  Layer *previous_layer;
+  std::shared_ptr<Layer> previous_layer;
   Patch patch;
   optional<Text> text;
   bool uses_patch;
@@ -40,7 +45,7 @@ struct TextBuffer::Layer {
     size_{this->text->size()},
     snapshot_count{0} {}
 
-  explicit Layer(Layer *previous_layer) :
+  explicit Layer(std::shared_ptr<Layer> previous_layer) :
     previous_layer{previous_layer},
     patch{Patch()},
     uses_patch{true},
@@ -52,8 +57,8 @@ struct TextBuffer::Layer {
     return Point(position.row, position.column - 1);
   }
 
-  bool is_above_layer(const Layer *layer) const {
-    Layer *predecessor = previous_layer;
+  bool is_above_layer(const shared_ptr<Layer> layer) const {
+    auto predecessor = previous_layer;
     while (predecessor != nullptr) {
       if (predecessor == layer) return true;
       predecessor = predecessor->previous_layer;
@@ -637,7 +642,7 @@ struct TextBuffer::Layer {
     return matches;
   }
 
-  bool is_modified(const Layer *base_layer) {
+  bool is_modified(const shared_ptr<Layer> base_layer) {
     if (size() != base_layer->size()) return true;
 
     bool result = false;
@@ -671,18 +676,17 @@ struct TextBuffer::Layer {
 };
 
 TextBuffer::TextBuffer(u16string &&text) :
-  base_layer{new Layer(move(text))},
+  base_layer{make_shared<Layer>(Layer(move(text)))},
   top_layer{base_layer} {}
 
 TextBuffer::TextBuffer() :
-  base_layer{new Layer(Text{})},
+  base_layer{make_shared<Layer>(Layer(Text{}))},
   top_layer{base_layer} {}
 
 TextBuffer::~TextBuffer() {
-  Layer *layer = top_layer;
+  auto layer = top_layer;
   while (layer != nullptr) {
-    Layer *previous_layer = layer->previous_layer;
-    delete layer;
+    auto previous_layer = layer->previous_layer;
     layer = previous_layer;
   }
 }
@@ -709,8 +713,7 @@ void TextBuffer::reset(Text &&new_base_text) {
 
   layer = top_layer->previous_layer;
   while (layer != nullptr) {
-    Layer *previous_layer = layer->previous_layer;
-    delete layer;
+    auto previous_layer = layer->previous_layer;
     layer = previous_layer;
   }
 
@@ -723,10 +726,10 @@ void TextBuffer::reset(Text &&new_base_text) {
   top_layer->previous_layer = nullptr;
 }
 
-Patch TextBuffer::get_inverted_changes(const Snapshot *snapshot) const {
-  vector<const Patch *> patches;
-  Layer *layer = top_layer;
-  while (layer != &snapshot->base_layer) {
+Patch TextBuffer::get_inverted_changes(const shared_ptr<Snapshot> snapshot) const {
+  vector<const Patch*> patches;
+  auto layer = top_layer;
+  while (layer.get() !=  &snapshot->base_layer) {
     patches.insert(patches.begin(), &layer->patch);
     layer = layer->previous_layer;
   }
@@ -767,7 +770,7 @@ void TextBuffer::serialize_changes(Serializer &serializer) {
   }
 
   vector<const Patch *> patches;
-  Layer *layer = top_layer;
+  auto layer = top_layer;
   while (layer != base_layer) {
     patches.insert(patches.begin(), &layer->patch);
     layer = layer->previous_layer;
@@ -784,7 +787,7 @@ void TextBuffer::serialize_changes(Serializer &serializer) {
 
 bool TextBuffer::deserialize_changes(Deserializer &deserializer) {
   if (top_layer != base_layer || (base_layer->previous_layer != nullptr)) return false;
-  top_layer = new Layer(base_layer);
+  top_layer = make_shared<Layer>(Layer(base_layer));
   top_layer->size_ = deserializer.read<uint32_t>();
   top_layer->extent_ = Point(deserializer);
   top_layer->patch = Patch(deserializer);
@@ -891,7 +894,7 @@ void TextBuffer::set_text(const u16string &new_text) {
 
 void TextBuffer::set_text_in_range(Range old_range, u16string &&string) {
   if (top_layer == base_layer || top_layer->snapshot_count > 0) {
-    top_layer = new Layer(top_layer);
+    top_layer = make_shared<Layer>(Layer(top_layer));
   }
 
   auto start = clip_position(old_range.start);
@@ -968,13 +971,13 @@ bool TextBuffer::has_astral() {
   return top_layer->has_astral();
 }
 
-bool TextBuffer::is_modified(const Snapshot *snapshot) const {
-  return top_layer->is_modified(&snapshot->base_layer);
+bool TextBuffer::is_modified(const shared_ptr<Snapshot> snapshot) const {
+  return top_layer->is_modified(make_shared<Layer>(snapshot->base_layer));
 }
 
 string TextBuffer::get_dot_graph() const {
-  Layer *layer = top_layer;
-  vector<Layer *> layers;
+  auto layer = top_layer;
+  vector<shared_ptr<Layer>> layers;
   while (layer != nullptr) {
     layers.push_back(layer);
     layer = layer->previous_layer;
@@ -998,7 +1001,7 @@ string TextBuffer::get_dot_graph() const {
 
 size_t TextBuffer::layer_count() const {
   size_t result = 1;
-  const Layer *layer = top_layer;
+  auto layer = top_layer;
   while (layer->previous_layer != nullptr) {
     result++;
     layer = layer->previous_layer;
@@ -1075,7 +1078,8 @@ TextBuffer::Snapshot::Snapshot(TextBuffer &buffer, TextBuffer::Layer &layer,
 void TextBuffer::Snapshot::flush_preceding_changes() {
   if (!layer.text) {
     layer.text = Text{text()};
-    if (layer.is_above_layer(buffer.base_layer)) buffer.base_layer = &layer;
+    if (layer.is_above_layer(buffer.base_layer)) 
+      buffer.base_layer = std::make_shared<Layer>(layer);
     buffer.consolidate_layers();
   }
 }
@@ -1090,8 +1094,8 @@ TextBuffer::Snapshot::~Snapshot() {
 }
 
 void TextBuffer::consolidate_layers() {
-  Layer *layer = top_layer;
-  vector<Layer *> mutable_layers;
+  auto layer = top_layer;
+  vector<shared_ptr<Layer>> mutable_layers;
   bool needed_by_layer_above = false;
 
   while (layer != nullptr) {
@@ -1116,7 +1120,7 @@ void TextBuffer::consolidate_layers() {
   squash_layers(mutable_layers);
 }
 
-void TextBuffer::squash_layers(const vector<Layer *> &layers) {
+void TextBuffer::squash_layers(const vector<shared_ptr<Layer>> &layers) {
   size_t layer_index = 0;
   size_t layer_count = layers.size();
   if (layer_count < 2) return;
@@ -1147,7 +1151,7 @@ void TextBuffer::squash_layers(const vector<Layer *> &layers) {
   // If there is another layer below these layers, combine their patches into
   // into one. Otherwise, this is the new base layer, so we don't need a patch.
   Patch patch;
-  Layer *previous_layer = layers.back()->previous_layer;
+  auto previous_layer = layers.back()->previous_layer;
 
   if (previous_layer != nullptr) {
     layer_index = layer_count - 1;
@@ -1166,8 +1170,4 @@ void TextBuffer::squash_layers(const vector<Layer *> &layers) {
   layers[0]->previous_layer = previous_layer;
   layers[0]->text = move(text);
   layers[0]->patch = move(patch);
-
-  for (layer_index = 1; layer_index < layer_count; layer_index++) {
-    delete layers[layer_index];
-  }
 }
