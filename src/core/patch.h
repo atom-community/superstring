@@ -36,7 +36,9 @@ public:
   };
 
   // Construction and destruction
+  Patch(Patch &);
   Patch(Patch &&);
+  Patch &Patch::operator=(Patch &other);
   Patch &operator=(Patch &&);
   explicit Patch(bool merges_adjacent_changes = true);
   explicit Patch(Deserializer &input);
