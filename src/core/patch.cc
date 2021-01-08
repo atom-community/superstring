@@ -319,6 +319,11 @@ struct Patch::NewCoordinates {
 Patch::Patch(bool merges_adjacent_changes)
   : root{nullptr}, change_count{0}, merges_adjacent_changes{merges_adjacent_changes} {}
 
+Patch::Patch(Patch &other)
+    : root{nullptr}, change_count{other.change_count}, merges_adjacent_changes{other.merges_adjacent_changes} {
+  *this = other;
+}
+
 Patch::Patch(Patch &&other)
   : root{nullptr}, change_count{other.change_count},
     merges_adjacent_changes{other.merges_adjacent_changes} {
@@ -376,6 +381,15 @@ Patch::Patch(Deserializer &input) :
   for (auto iter = node_stack.rbegin(); iter != node_stack.rend(); ++iter) {
     (*iter)->compute_subtree_text_sizes();
   }
+}
+
+Patch &Patch::operator=(Patch &other) {
+  std::swap(root, other.root);
+  std::swap(left_ancestor_stack, other.left_ancestor_stack);
+  std::swap(node_stack, other.node_stack);
+  std::swap(change_count, other.change_count);
+  merges_adjacent_changes = other.merges_adjacent_changes;
+  return *this;
 }
 
 Patch &Patch::operator=(Patch &&other) {

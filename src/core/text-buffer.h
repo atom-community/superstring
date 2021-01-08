@@ -9,12 +9,13 @@
 #include "range.h"
 #include "regex.h"
 #include "marker-index.h"
+#include <memory>
 
 class TextBuffer {
   struct Layer;
-  Layer *base_layer;
-  Layer *top_layer;
-  void squash_layers(const std::vector<Layer *> &);
+  std::shared_ptr<Layer> base_layer;
+  std::shared_ptr<Layer> top_layer;
+  void squash_layers(const std::vector<std::shared_ptr<Layer>> &);
   void consolidate_layers();
 
 public:
@@ -95,8 +96,8 @@ public:
   friend class Snapshot;
   Snapshot *create_snapshot();
 
-  bool is_modified(const Snapshot *) const;
-  Patch get_inverted_changes(const Snapshot *) const;
+  bool is_modified(const std::shared_ptr <Snapshot>) const;
+  Patch get_inverted_changes(const std::shared_ptr<Snapshot>) const;
 
   size_t layer_count()  const;
   std::string get_dot_graph() const;

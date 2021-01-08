@@ -425,7 +425,6 @@ public:
   }
 
   void HandleOKCallback() {
-    delete snapshot;
     Local<Value> argv[] = {Nan::Null(), encode_ranges(matches)};
     callback->Call(2, argv, async_resource);
   }
@@ -586,7 +585,6 @@ void TextBufferWrapper::find_words_with_subsequence_in_range(const Nan::Function
     void CancelIfQueued() {
       int lock_status = uv_rwlock_trywrlock(&snapshot_lock);
       if (lock_status == 0) {
-        delete snapshot;
         snapshot = nullptr;
         uv_rwlock_wrunlock(&snapshot_lock);
       }
@@ -599,7 +597,6 @@ void TextBufferWrapper::find_words_with_subsequence_in_range(const Nan::Function
         return;
       }
 
-      delete snapshot;
       auto text_buffer_wrapper = Nan::ObjectWrap::Unwrap<TextBufferWrapper>(Nan::New(buffer));
       text_buffer_wrapper->outstanding_workers.erase(this);
 
@@ -730,7 +727,7 @@ class Loader {
   Nan::Callback *progress_callback;
   Nan::AsyncResource *async_resource;
   TextBuffer *buffer;
-  TextBuffer::Snapshot *snapshot;
+  std::shared_ptr<TextBuffer::Snapshot> snapshot;
   string file_name;
   string encoding_name;
   optional<Text> loaded_text;
@@ -778,17 +775,14 @@ class Loader {
 
   pair<Local<Value>, Local<Value>> Finish(Nan::AsyncResource* caller_async_resource = nullptr) {
     if (error) {
-      delete snapshot;
       return {error_to_js(*error, encoding_name, file_name), Nan::Undefined()};
     }
 
     if (cancelled || (!force && buffer->is_modified())) {
-      delete snapshot;
       return {Nan::Null(), Nan::Null()};
     }
 
     Patch inverted_changes = buffer->get_inverted_changes(snapshot);
-    delete snapshot;
 
     if (compute_patch && inverted_changes.get_change_count() > 0) {
       inverted_changes.combine(patch);
@@ -1004,7 +998,6 @@ class BaseTextComparisonWorker : public Nan::AsyncWorker {
   }
 
   void HandleOKCallback() {
-    delete snapshot;
     if (error) {
       Local<Value> argv[] = {error_to_js(*error, encoding_name, file_name)};
       callback->Call(1, argv, async_resource);
@@ -1090,11 +1083,9 @@ class SaveWorker : public Nan::AsyncWorker {
 
   Local<Value> Finish() {
     if (error) {
-      delete snapshot;
       return error_to_js(*error, encoding_name, file_name);
     } else {
       snapshot->flush_preceding_changes();
-      delete snapshot;
       return Nan::Null();
     }
   }
