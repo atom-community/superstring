@@ -131,11 +131,12 @@
                 ],
                 "msvs_settings": {
                     "VCCLCompilerTool": {
-                        'ExceptionHandling': 0,               # /EHsc
                         'MultiProcessorCompilation': 'true',
                         "AdditionalOptions": [
                             # C++ standard
                             "/std:c++<(STANDARD)",
+
+                            "/EHsc" # C++ exception handling
                         ]
                     }
               }
