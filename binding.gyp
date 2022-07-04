@@ -1,4 +1,10 @@
 {
+    "variables": {
+        "tests": 0,
+        "STANDARD": 17,
+        "MACOSX_DEPLOYMENT_TARGET": "10.15"
+    },
+
     "targets": [
         {
             "target_name": "superstring",
@@ -66,12 +72,6 @@
         }
     ],
 
-    "variables": {
-        "tests": 0,
-        "STANDARD": 17,
-        "MACOSX_DEPLOYMENT_TARGET": "10.15"
-    },
-
     "conditions": [
         # If --tests is passed to node-gyp configure, we'll build a standalone
         # executable that runs tests on the patch.
@@ -117,7 +117,9 @@
             ['OS=="mac"', {
                 "xcode_settings": {
                     'CLANG_CXX_LIBRARY': 'libc++',
-                    'CLANG_CXX_LANGUAGE_STANDARD':'c++(STANDARD)',
+                    'CLANG_CXX_LANGUAGE_STANDARD':'c++<(STANDARD)',
+                    "CLANG_CXX_LIBRARY": "libc++",
+                    'MACOSX_DEPLOYMENT_TARGET': "<(MACOSX_DEPLOYMENT_TARGET)"
                 }
             }],
             ['OS=="win"', {
@@ -127,6 +129,16 @@
                 "defines": [
                     "NOMINMAX"
                 ],
+                "msvs_settings": {
+                    "VCCLCompilerTool": {
+                        'ExceptionHandling': 0,               # /EHsc
+                        'MultiProcessorCompilation': 'true',
+                        "AdditionalOptions": [
+                            # C++ standard
+                            "/std:c++<(STANDARD)",
+                        ]
+                    }
+              }
             }]
         ],
         'default_configuration': 'Release',
@@ -135,24 +147,16 @@
           'Release': {
             'defines': [ 'NDEBUG' ],
             "cflags": [ "-fno-exceptions", "-O3" ],
-            "cflags_cc": [ "-fno-exceptions", "-O3", "-std=c++<(STANDARD)" ],
+            "cflags_cc": [ "-fno-exceptions", "-O3" ],
             "xcode_settings": {
               'GCC_OPTIMIZATION_LEVEL': '3', # stop gyp from defaulting to -Os
-              "CLANG_CXX_LIBRARY": "libc++",
-              "CLANG_CXX_LANGUAGE_STANDARD": "c++<(STANDARD)",
-              'MACOSX_DEPLOYMENT_TARGET': "<(MACOSX_DEPLOYMENT_TARGET)"
             }, # XCODE
             "msvs_settings": {
               "VCCLCompilerTool": {
-                'ExceptionHandling': 0,               # /EHsc
-                'MultiProcessorCompilation': 'true',
                 'RuntimeTypeInfo': 'false',
                 'Optimization': 3,              # full optimizations /O2  ==  /Og /Oi /Ot /Oy /Ob2 /GF /Gy
                 'StringPooling': 'true',        # pool string literals
                 "AdditionalOptions": [
-                  # C++ standard
-                  "/std:c++<(STANDARD)",
-
                   # Optimizations
                   "/O2",
                   # "/Ob3",  # aggressive inline
