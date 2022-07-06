@@ -2,7 +2,7 @@
 #define SUPERSTRING_TEST_HELPERS_H
 
 #include "patch.h"
-#include <catch.hpp>
+#include <catch_amalgamated.hpp>
 #include <cstring>
 #include <memory>
 #include <ostream>

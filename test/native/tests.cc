@@ -2,4 +2,4 @@
 // for a faster feedback loop
 
 #define CATCH_CONFIG_MAIN
-#include <catch.hpp>
+#include <catch_amalgamated.hpp>
