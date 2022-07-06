@@ -1,1 +1,5 @@
-vendor/ linguist-vendored
+vendor/pcre/ linguist-vendored
+vendor/libcxx linguist-vendored
+vendor/win-iconv linguist-vendored
+vendor/catch_amalgamated.cpp linguist-vendored
+vendor/catch_amalgamated.hpp linguist-vendored
