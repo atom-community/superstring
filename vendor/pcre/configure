@@ -1,0 +1,6 @@
+cd ./vendor/pcre/pcre2-10.40
+cmake -S ./ -B ./build -DPCRE2_BUILD_PCRE2_8=ON -DPCRE2_BUILD_PCRE2_16=ON -DPCRE2_BUILD_PCRE2_32=ON -DPCRE2_STATIC_PIC=ON -DPCRE2_SUPPORT_JIT=ON -DPCRE2_BUILD_TESTS=OFF -DPCRE2_BUILD_PCRE2GREP=OFF -DINSTALL_MSVC_PDB=ON -DPCRE2_SUPPORT_BSR_ANYCRLF=ON
+cp ./build/pcre2.h ../include/
+cp ./build/config.h ../include/
+cp ./build/pcre2_chartables.c ../
+cd ../../../
