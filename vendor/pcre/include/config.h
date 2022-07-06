@@ -5,8 +5,12 @@
 #define HAVE_STRERROR 1
 #define HAVE_SYS_STAT_H 1
 #define HAVE_SYS_TYPES_H 1
-/* #undef HAVE_UNISTD_H */
+
+#ifdef _WIN32
 #define HAVE_WINDOWS_H 1
+#else
+#undef HAVE_UNISTD_H
+#endif
 
 /* #undef HAVE_BCOPY */
 /* #undef HAVE_MEMFD_CREATE */
@@ -33,7 +37,7 @@
 #define SUPPORT_UNICODE 1
 /* #undef SUPPORT_VALGRIND */
 
-/* #undef BSR_ANYCRLF */
+#define BSR_ANYCRLF 1
 /* #undef EBCDIC */
 /* #undef EBCDIC_NL25 */
 /* #undef HEAP_MATCH_RECURSE */
